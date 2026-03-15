@@ -9,7 +9,7 @@ The pipeline is built on the `Unstructured` library for PDF parsing, combined wi
 ## Pipeline Architecture
 
 ```
-![pipeline](image/README/pipeline.png)
+![pipeline](images/pipeline.png)
 ```
 
 ## Repository Structure
