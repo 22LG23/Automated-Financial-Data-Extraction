@@ -8,16 +8,22 @@ The pipeline is built on the `Unstructured` library for PDF parsing, combined wi
 
 ## Pipeline Architecture
 
-```
 ![pipeline](images/pipeline.png)
-```
 
 ## Repository Structure
 
 ```
-├── main.py                              # Open-source pipeline (page classification + extraction)
-├── structured_data_pipeline_unstructured.py  # Full pipeline: OCR → LLM → JSON output
-├── compute_quotients.py                 # Financial ratio computation from extracted JSON
+├── src/
+│   ├── main.py                                    # Open-source pipeline (page classification + extraction)
+│   ├── structured_data_pipeline_unstructured.py    # Full pipeline: OCR → LLM → JSON output
+│   └── compute_quotients.py                        # Financial ratio computation from extracted JSON
+├── test/
+│   ├── Accuracy.py                                 # Accuracy evaluation script
+│   └── Recall.py                                   # Recall evaluation script
+├── data/                                            # Data folder
+├── images/                                          # Pipeline diagrams and figures
+├── prompt.txt                                       # LLM prompt template
+├── pyproject.toml                                   # Project configuration and dependencies
 └── README.md
 ```
 
@@ -98,26 +104,26 @@ All divisions are wrapped in `try/except` blocks, returning `None` for any ratio
 
 ### Prerequisites
 
-* Python 3.9+
+* Python 3.13+
 * An LLM API key
 
 ### Installation
 
 ```bash
-uv add unstructured[pdf] rapidfuzz pymupdf openai
+uv sync
 ```
 
 ### Configuration
 
 Before running, update the following placeholders in each script:
 
-**`main.py` and `structured_data_pipeline_unstructured.py`:**
+**`src/main.py` and `src/structured_data_pipeline_unstructured.py`:**
 
 ```python
 pdf_path = r"PATH_TO_PDF_DOCUMENT"
 ```
 
-**`structured_data_pipeline_unstructured.py`** (OpenAI credentials):
+**`src/structured_data_pipeline_unstructured.py`** (OpenAI credentials):
 
 ```python
 azure_endpoint = "YOUR_AZURE_ENDPOINT"
@@ -125,20 +131,18 @@ api_key = "YOUR_API_KEY"
 api_version = "YOUR_API_VERSION"
 ```
 
-**`compute_quotients.py`:**
+**`src/compute_quotients.py`:**
 
 ```python
 document_path = r"PATH_TO_JSON_OUTPUT"
 ```
-
----
 
 ## Running the Pipeline
 
 ### Step 1 — Extract and classify pages, extract nota integrativa
 
 ```bash
-python main.py
+python src/main.py
 ```
 
 Output: `<document_name>/finale.pdf`, `<document_name>/nota_integrativa.txt`
@@ -146,7 +150,7 @@ Output: `<document_name>/finale.pdf`, `<document_name>/nota_integrativa.txt`
 ### Step 2 — Extract structured financial data
 
 ```bash
-python structured_data_pipeline_unstructured.py
+python src/structured_data_pipeline_unstructured.py
 ```
 
 Output: `estrazione_output.json`
@@ -154,12 +158,10 @@ Output: `estrazione_output.json`
 ### Step 3 — Compute financial ratios
 
 ```bash
-python compute_quotients.py
+python src/compute_quotients.py
 ```
 
 Output: printed dictionary of computed ratios
-
----
 
 ## Output JSON Structure
 
@@ -197,5 +199,5 @@ Output: printed dictionary of computed ratios
 * OCR quality is heavily dependent on the PDF source. Scanned, low-resolution, or two-column documents may result in incomplete table extraction.
 * The heuristic title-matching approach works well for standard Italian statutory financial statements but may need tuning for non-standard layouts or foreign-language documents.
 * The LLM extraction step depends on the quality of the OCR output fed to it; errors in OCR propagate to the JSON output.
-* The pipeline currently selects only the **most recent year** when computing ratios. Multi-year trend analysis requires minor extension of `compute_quotients.py`.
+* The pipeline currently selects only the **most recent year** when computing ratios. Multi-year trend analysis requires minor extension of `src/compute_quotients.py`.
 * API credentials are currently hardcoded in the scripts and should be moved to environment variables or a `.env` file for production use.
