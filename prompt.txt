@@ -1,0 +1,102 @@
+prompt_estrazione = '''
+### OBIETTIVO
+Estrarre **tutte le voci** contabili dai prospetti di **Stato Patrimoniale** e **Conto Economico** presenti nel testo OCR.  
+Restituire l’output in **formato JSON strutturato** + calcolare **10 indicatori riassuntivi** standard in una sezione separata.
+
+---
+
+### INPUT
+OCR di bilanci aziendali. Il testo può contenere errori, impaginazioni variabili, simboli non standard o separatori numerici inconsistenti.
+
+---
+
+### ISTRUZIONI
+
+1. **Identifica le sezioni contabili**:
+   - Stato Patrimoniale → suddividi in `"attivo"`, `"passivo"`, `"patrimonio_netto"`
+   - Conto Economico → suddividi in `"ricavi"`, `"costi"`, `"risultatoEsercizio"`
+
+2. **Estrai tutte le voci presenti**, inclusi sottogruppi e dettagli (es. “materie prime”, “altre riserve”, “oneri diversi di gestione”, ecc.).  
+   - Mantieni la gerarchia logica delle voci (es. Attivo → Rimanenze → Prodotti finiti).
+   - Non omettere righe. Non aggregare.
+
+3. **Classifica ogni valore per anno**, solo se l’anno è chiaramente indicato nel testo.
+
+4. **Rimuovi tutti i simboli monetari** e converti i numeri in **interi puliti** (es. "2.304.000 €" → `2304000`).
+
+5. **Non dedurre valori mancanti.**  
+   Se serve calcolare un indicatore partendo da altre voci, fallo solo se la logica è esplicita e documentalo nelle note.
+
+6. **Se sono presenti valori distinti per "gruppo" e "terzi", usa sempre il valore del gruppo.**
+
+7. **Mantieni l’ordine di apparizione** delle voci, se possibile.
+
+---
+
+### VALORI RIASSUNTIVI (sezione "ValoriEstratti")
+
+In aggiunta all’elenco completo delle voci, estrai questi 10 indicatori standard (anche se nel documento sono indicati con nomi diversi):
+
+- UtileNetto  
+- EBIT  
+- TotaleAttivo  
+- TotalePassivo  
+- PatrimonioNetto  
+- AttivitaCorrenti  
+- PassivitaCorrenti  
+- Immobilizzazioni  
+- Rimanenze  
+- PassivitaNonCorrenti  
+
+---
+
+### OUTPUT JSON
+
+```json
+{
+  "StatoPatrimoniale": {
+    "anno": {
+      "attivo": {
+        "categoria": {
+          "voce": valore_intero
+        }
+      },
+      "passivo": {
+        "categoria": {
+          "voce": valore_intero
+        }
+      },
+      "patrimonio_netto": {
+        "voce": valore_intero
+      }
+    }
+  },
+  "ContoEconomico": {
+    "anno": {
+      "categoria": {
+        "voce": valore_intero
+      }
+    }
+  },
+  "ValoriEstratti": {
+    "anno": {
+      "UtileNetto": int,
+      "EBIT": int,
+      "TotaleAttivo": int,
+      "TotalePassivo": int,
+      "PatrimonioNetto": int,
+      "AttivitaCorrenti": int,
+      "PassivitaCorrenti": int,
+      "Immobilizzazioni": int,
+      "Rimanenze": int,
+      "PassivitaNonCorrenti": int
+    }
+  },
+  "note": {
+    "correzioni_ocr": [],
+    "ambiguita": [],
+    "assunzioni": [],
+    "calcoli_effettuati": []
+  }
+}
+'''
